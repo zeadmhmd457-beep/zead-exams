@@ -1,0 +1,151 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>زياد السناني | منصة التقييمات</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Tahoma;background:#f1f5f9;color:#172b4d}
+header{background:#142b4d;color:white;text-align:center;padding:30px 15px}
+header h1{margin:0 0 12px}
+header p{color:#cbd5e1}
+main{max-width:750px;margin:25px auto;padding:15px}
+.card{background:white;padding:20px;border-radius:15px;margin-bottom:16px;box-shadow:0 3px 12px #0001}
+select,button{width:100%;padding:14px;margin-top:12px;border-radius:9px;font-size:16px}
+select{border:1px solid #ddd;background:white}
+button{border:0;background:#1d4ed8;color:white;font-weight:bold;cursor:pointer}
+.secondary{background:#64748b}
+.hidden{display:none}
+.option{display:block;padding:15px;background:#f1f5f9;margin:10px 0;border:2px solid transparent;border-radius:10px;cursor:pointer}
+.option.selected{background:#dbeafe;border-color:#2563eb}
+.option input{display:none}
+.progress{height:8px;background:#e2e8f0;border-radius:10px;margin:15px 0}
+.progress div{height:8px;background:#2563eb;border-radius:10px}
+footer{text-align:center;padding:25px;color:#64748b}
+</style>
+</head>
+<body>
+
+<header>
+<h1>زياد السناني</h1>
+<p>منصة التقييمات الوزارية</p>
+<p>تانية بكالوريا | مسار الهندسة وعلوم الحاسب</p>
+</header>
+
+<main>
+
+<div class="card" id="home">
+<h2>ابدأ التقييم</h2>
+<label>اختر الأسبوع</label>
+<select id="week">
+<option value="">اختر الأسبوع</option>
+</select>
+<label>اختر نوع التقييم</label>
+<select id="type">
+<option value="">اختر التقييم</option>
+<option>التقييم الأسبوعي</option>
+<option>الأداء الصفي</option>
+<option>الأداء المنزلي</option>
+</select>
+<button onclick="start()">ابدأ الحل</button>
+</div>
+
+<div class="card hidden" id="exam">
+<p id="counter"></p>
+<div class="progress"><div id="bar"></div></div>
+<h3 id="question"></h3>
+<div id="options"></div>
+<button class="secondary" onclick="previous()">السابق</button>
+<button onclick="next()">التالي</button>
+</div>
+
+<div class="card hidden" id="finish">
+<h2>انتهيت من التقييم</h2>
+<button onclick="answers()">عرض الإجابات النموذجية</button>
+<button class="secondary" onclick="location.reload()">العودة للرئيسية</button>
+<div id="review"></div>
+</div>
+
+</main>
+
+<footer>جميع الحقوق محفوظة © زياد السناني</footer>
+
+<script>
+for(let i=1;i<=20;i++){
+let o=document.createElement("option");
+o.value=i;
+o.textContent="الأسبوع "+i;
+document.getElementById("week").appendChild(o);
+}
+
+/* تضاف الأسئلة الرسمية هنا بعد تجهيزها */
+const exams={};
+
+let questions=[],choices=[],current=0;
+
+function start(){
+let w=document.getElementById("week").value;
+let t=document.getElementById("type").value;
+if(!w||!t){alert("اختار الأسبوع والتقييم");return}
+
+questions=exams[w]?.[t]||[];
+if(!questions.length){
+alert("لم تتم إضافة أسئلة هذا التقييم بعد.");
+return;
+}
+
+choices=Array(questions.length).fill(null);
+current=0;
+document.getElementById("home").classList.add("hidden");
+document.getElementById("exam").classList.remove("hidden");
+render();
+}
+
+function render(){
+let q=questions[current];
+document.getElementById("counter").textContent=
+"السؤال "+(current+1)+" من "+questions.length;
+document.getElementById("bar").style.width=
+((current+1)/questions.length*100)+"%";
+document.getElementById("question").textContent=q.q;
+
+let html="";
+q.a.forEach((a,i)=>{
+html+=`<label class="option ${choices[current]===i?'selected':''}">
+<input type="radio" name="answer">${a}</label>`;
+});
+document.getElementById("options").innerHTML=html;
+
+document.querySelectorAll(".option").forEach((el,i)=>{
+el.onclick=()=>{choices[current]=i;render()};
+});
+}
+
+function next(){
+if(current<questions.length-1){current++;render()}
+else{
+document.getElementById("exam").classList.add("hidden");
+document.getElementById("finish").classList.remove("hidden");
+}
+}
+function previous(){
+if(current>0){current--;render()}
+}
+function answers(){
+let html="<h3>الإجابات النموذجية</h3>";
+questions.forEach((q,i)=>{
+html+=`<div class="card">
+<strong>السؤال ${i+1}</strong>
+<p>${q.q}</p>
+<p>الإجابة الصحيحة: ${q.a[q.c]}</p>
+<p>إجابتك: ${choices[i]===null?"لم تجب":q.a[choices[i]]}</p>
+</div>`;
+});
+document.getElementById("review").innerHTML=html;
+}
+</script>
+
+</body>
+</html>
